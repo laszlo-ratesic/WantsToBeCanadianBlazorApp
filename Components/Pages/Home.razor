@@ -1,0 +1,25 @@
+﻿@page "/"
+@using WantsToBeCanadianBlazorApp.Data
+@using WantsToBeCanadianBlazorApp.Services
+@inject ProductsService productsService
+
+<PageTitle>Home</PageTitle>
+
+<h1>Hello, WantsToBeCanadian!</h1>
+
+Here is a list of products
+
+<ul>
+    @foreach (Product product in products)
+    {
+        <li>@product.Name</li>
+    }
+</ul>
+
+@code {
+    private List<Product> products = new();
+    protected override void OnInitialized()
+    {
+        products = productsService.GetProducts();
+    }
+}

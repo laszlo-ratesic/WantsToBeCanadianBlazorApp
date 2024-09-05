@@ -1,0 +1,116 @@
+﻿@page "/crud-products"
+@using WantsToBeCanadianBlazorApp.Services
+@using WantsToBeCanadianBlazorApp.Data
+@inject ProductsService productsService
+
+<h3>Product Management</h3>
+
+<!-- Form for adding a new product -->
+@if (newProduct != null)
+{
+    <div>
+        <h4>Add New Product</h4>
+        <input @bind="newProduct.Name" placeholder="Product Name" />
+        <input @bind="newProduct.Price" type="number" placeholder="Product Price" />
+        <button onclick="@(() => AddProduct(newProduct))">Save Product</button>
+    </div>
+}
+
+<!-- Display CRUD Table -->
+<table>
+    <thead>
+        <tr>
+            <th>Id</th>
+            <th>Name</th>
+            <th>Price</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var product in products)
+        {
+            <tr>
+                @if (editProduct != null && editProduct.Id == product.Id)
+                {
+                    <td>@product.Id</td>
+                    <td>
+                        <input @bind="editProduct.Name" placeholder="Product Name" />
+                    </td>
+                    <td>
+                        <input @bind="editProduct.Price" type="number" placeholder="Product Price" />
+                    </td>
+                    <button onclick="@(() => CancelEdit())">Cancel</button>
+                    <button onclick="@(() => UpdateProduct())">Save</button>
+                } else {
+                    <td>@product.Id</td>
+                    <td>@product.Name</td>
+                    <td>@product.Price</td>
+                    <td>
+                        <button onclick="@(() => EditProduct(product))">Edit</button>
+                        <button onclick="@(() => DeleteProduct(product.Id))">Delete</button>
+                    </td>
+                }
+            </tr>
+        }
+        <tr>
+            <td>
+                <button onclick="@(() => AddingProduct())">Add Product</button>
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+@code {
+    private List<Product> products = new List<Product>();
+    private Product? newProduct = null;
+    private Product? editProduct = null;
+    protected override void OnInitialized()
+    {
+        products = productsService.GetProducts();
+    }
+    private void AddProduct(Product product)
+    {
+        productsService.AddProduct(product);
+        products = productsService.GetProducts().ToList(); // refresh list
+        newProduct = null; // clear form
+    }
+
+    private void EditProduct(Product product)
+    {
+        editProduct = new Product
+        {
+            Id = product.Id,
+            Name = product.Name,
+            Price = product.Price
+        };
+        StateHasChanged();
+    }
+
+    private void UpdateProduct()
+    {
+        if (editProduct != null)
+        {
+            productsService.UpdateProduct(editProduct);
+            products = productsService.GetProducts(); // refresh list
+            editProduct = null; // clear edit form
+        }
+    }
+
+    private void DeleteProduct(int id)
+    {
+        productsService.DeleteProduct(id);
+        products = productsService.GetProducts(); // refresh list
+        StateHasChanged();
+    }
+
+    private void AddingProduct()
+    {
+        newProduct = new();
+    }
+
+    private void CancelEdit()
+    {
+        editProduct = null;
+        StateHasChanged();
+    }
+}
